@@ -1,5 +1,5 @@
 import streamlit as st
-from openai import OpenAI
+import google.generativeai as genai
 
 # =========================
 # NASTAVITVE STRANI
@@ -152,26 +152,27 @@ KATEGORIJE ODGOVOROV
 
         try:
 
-            client = OpenAI(
-                api_key=st.secrets["OPENAI_API_KEY"]
-            )
+            
+genai.configure(
+    api_key=st.secrets["GEMINI_API_KEY"]
+)
 
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": SYSTEM_PROMPT
-                    },
-                    {
-                        "role": "user",
-                        "content": user_prompt
-                    }
-                ],
-                temperature=0.2
-            )
+model = genai.GenerativeModel(
+    "gemini-2.5-flash"
+)
 
-            result = response.choices[0].message.content
+
+            
+response = model.generate_content(
+    f"""
+{SYSTEM_PROMPT}
+
+{user_prompt}
+"""
+)
+
+result = response.text
+
 
             st.markdown("---")
             st.markdown(result)
