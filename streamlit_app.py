@@ -153,25 +153,25 @@ KATEGORIJE ODGOVOROV
         try:
 
             
-genai.configure(
-    api_key=st.secrets["GEMINI_API_KEY"]
-)
+            genai.configure(
+                api_key=st.secrets["GEMINI_API_KEY"]
+            )
 
-model = genai.GenerativeModel(
-    "gemini-2.5-flash"
-)
+            model = genai.GenerativeModel(
+                "gemini-2.5-flash"
+            )
 
 
             
-response = model.generate_content(
-    f"""
-{SYSTEM_PROMPT}
+            response = model.generate_content(
+                f"""
+                {SYSTEM_PROMPT}
 
-{user_prompt}
-"""
-)
+                {user_prompt}
+                """
+            )
 
-result = response.text
+            result = response.text
 
 
             st.markdown("---")
