@@ -1,9 +1,9 @@
 import streamlit as st
-import google.generativeai as genai
+from openai import OpenAI
 
-# =========================
-# NASTAVITVE STRANI
-# =========================
+# ====================================================
+# NASTAVITVE
+# ====================================================
 
 st.set_page_config(
     page_title="QAS-99 Ocenjevalnik",
@@ -11,118 +11,124 @@ st.set_page_config(
     layout="wide"
 )
 
-st.markdown(
-    """
-    <h1 style='text-align:center;color:#2E86AB;'>
-    QAS-99 Ocenjevalnik vprašanj
-    </h1>
-    """,
-    unsafe_allow_html=True
+# ====================================================
+# GROQ
+# ====================================================
+
+client = OpenAI(
+    api_key=st.secrets["GROQ_API_KEY"],
+    base_url="https://api.groq.com/openai/v1"
 )
 
-# =========================
+# ====================================================
 # SISTEMSKI PROMPT
-# =========================
+# ====================================================
 
 SYSTEM_PROMPT = """
 Ste metodolog anketiranja in strokovnjak za oblikovanje vprašalnikov.
 
 Vaša naloga je oceniti anketna vprašanja in kategorije odgovorov po metodologiji RTI Question Appraisal System (QAS-99).
 
-Za vsako postavko ocenite, ali obstaja problem (DA ali NE).
+Za vsako postavko ocenite obstoj potencialne težave.
 
 KORAK 1: BRANJE
 
-Q1a – Težave pri določanju, kateri deli vprašanja so pomembni.
-Q1b – Manjkajo informacije za pravilno razumevanje.
-Q1c – Besedilo je pretežko za povprečnega respondenta.
+Q1a – Težave pri razumevanju pomembnih delov vprašanja.
+Q1b – Manjkajoče informacije.
+Q1c – Zahtevna raven bralne pismenosti.
 
 KORAK 2: NAVODILA
 
-Q2a – Nejasna ali nasprotujoča navodila.
-Q2b – Preveč zapletena navodila.
+Q2a – Nejasna navodila.
+Q2b – Zapletena navodila.
 
 KORAK 3: JASNOST
 
-Q3a – Predolgo ali nerodno oblikovano vprašanje.
+Q3a – Predolgo ali nerodno vprašanje.
 Q3b – Nepojasnjeni strokovni izrazi.
-Q3c – Dvoumnost oziroma več možnih interpretacij.
-Q3d – Nejasno ali manjkajoče časovno obdobje.
+Q3c – Dvoumnost.
+Q3d – Nejasno referenčno obdobje.
 
 KORAK 4: PREDPOSTAVKE
 
-Q4a – Neustrezne predpostavke o respondentu.
-Q4b – Predpostavka o vedenju ali izkušnji.
-Q4c – Dvojno vprašanje (double-barrelled).
+Q4a – Neustrezne predpostavke.
+Q4b – Predpostavke o vedenju ali izkušnjah.
+Q4c – Dvojno vprašanje.
 
 KORAK 5: ZNANJE IN SPOMIN
 
-Q5a – Respondent odgovora verjetno ne pozna.
+Q5a – Respondent odgovora ne pozna.
 Q5b – Respondent nima oblikovanega stališča.
-Q5c – Težaven priklic iz spomina.
+Q5c – Težaven priklic informacij.
 Q5d – Zahtevni miselni izračuni.
 
-KORAK 6: OBČUTLJIVOST IN PRISTRANSKOST
+KORAK 6: OBČUTLJIVOST
 
 Q6a – Občutljiva tema.
-Q6b – Besedilo povečuje občutljivost.
-Q6c – Družbeno zaželen odgovor.
+Q6b – Povečana občutljivost zaradi formulacije.
+Q6c – Socialno zaželen odgovor.
 
 KORAK 7: KATEGORIJE ODGOVOROV
 
-Q7a – Odprto vprašanje ni primerno.
-Q7b – Neskladje med vprašanjem in odgovori.
-Q7c – Nejasni izrazi v kategorijah.
+Q7a – Neprimerna odprta oblika.
+Q7b – Neskladje vprašanja in odgovorov.
+Q7c – Nejasni izrazi.
 Q7d – Dvoumne kategorije.
-Q7e – Prekrivajoče kategorije.
+Q7e – Prekrivanje kategorij.
 Q7f – Manjkajoče kategorije.
 Q7g – Nelogičen vrstni red.
 
 KORAK 8: DRUGO
 
-Q8a – Druge ugotovljene težave.
+Q8a – Druge težave.
 
-Pri vsakem kriteriju:
+Za vsak kriterij odgovori:
 
-- Odgovori z DA ali NE.
-- Če DA, napiši kratko razlago.
-- Če NE, zapiši "Ni zaznane težave".
+DA ali NE
+
+Če DA:
+kratka razlaga.
+
+Če NE:
+"Nobena težava ni zaznana."
 
 Na koncu dodaj:
 
-1. Povzetek glavnih ugotovitev.
+1. Povzetek.
 2. Splošne komentarje.
-3. Predlagano izboljšano različico vprašanja, če je potrebna.
+3. Predlagano izboljšano vprašanje.
 
-Odgovarjaj izključno v slovenščini.
+Odgovarjaj v slovenščini.
 """
 
-# =========================
+# ====================================================
+# NASLOV
+# ====================================================
+
+st.title("📋 QAS-99 Ocenjevalnik vprašanj")
+
+st.markdown("""
+Orodje za avtomatsko evalvacijo vprašanj po metodologiji **QAS-99**.
+""")
+
+# ====================================================
 # ZAVIHKI
-# =========================
+# ====================================================
 
 tab1, tab2 = st.tabs(
     [
         "Oceni vprašanje",
-        "Oceni svoje vprašanje"
+        "O aplikaciji"
     ]
 )
 
-# =========================
-# PRVI ZAVIHEK
-# =========================
+# ====================================================
+# TAB 1
+# ====================================================
 
 with tab1:
 
-    st.header("QAS-99 Ocena vprašanja")
-
-    st.write(
-        """
-        Vnesite anketno vprašanje in kategorije odgovorov.
-        Model bo izvedel presojo po metodologiji QAS-99
-        ter predlagal izboljšave.
-        """
-    )
+    st.subheader("Vnesite vprašanje")
 
     question = st.text_area(
         "Besedilo vprašanja",
@@ -130,11 +136,11 @@ with tab1:
     )
 
     categories = st.text_area(
-        "Kategorije odgovorov (vsaka v svoji vrstici; pustite prazno za odprto vprašanje)",
+        "Kategorije odgovorov (vsaka v svoji vrstici)",
         height=120
     )
 
-    if st.button("Oceni"):
+    if st.button("Oceni vprašanje"):
 
         if not question.strip():
             st.warning("Vnesite vprašanje.")
@@ -147,90 +153,60 @@ VPRAŠANJE
 
 KATEGORIJE ODGOVOROV
 
-{categories if categories else "Odprto vprašanje"}
+{categories if categories.strip() else "Odprto vprašanje"}
 """
 
-        try:
+        with st.spinner("Izvajam analizo ..."):
 
-            
-            genai.configure(
-                api_key=st.secrets["GEMINI_API_KEY"]
-            )
+            try:
 
-            model = genai.GenerativeModel(
-                "gemini-2.0-flash"
-            )
+                response = client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    temperature=0.2,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": SYSTEM_PROMPT
+                        },
+                        {
+                            "role": "user",
+                            "content": user_prompt
+                        }
+                    ]
+                )
 
+                result = response.choices[0].message.content
 
-            
-            response = model.generate_content(
-                f"""
-                {SYSTEM_PROMPT}
+                st.markdown("---")
+                st.markdown(result)
 
-                {user_prompt}
-                """
-            )
+            except Exception as e:
+                st.error(f"Napaka: {e}")
 
-            result = response.text
-
-
-            st.markdown("---")
-            st.markdown(result)
-
-        except Exception as e:
-            st.error(f"Napaka: {e}")
-
-# =========================
-# DRUGI ZAVIHEK
-# =========================
+# ====================================================
+# TAB 2
+# ====================================================
 
 with tab2:
 
-    st.header("Hitra analiza vprašanja")
+    st.markdown("""
+### Namen
 
-    free_question = st.text_area(
-        "Vnesite vprašanje za analizo",
-        height=150,
-        key="free_question"
-    )
+Orodje demonstrira uporabo velikih jezikovnih modelov
+za evalvacijo anketnih vprašanj po metodologiji QAS-99.
 
-    if st.button("Analiziraj vprašanje"):
+### Kaj preverja?
 
-        if not free_question.strip():
-            st.warning("Vnesite vprašanje.")
-            st.stop()
+- razumljivost vprašanja,
+- jasnost in dvoumnost,
+- predpostavke,
+- kognitivno obremenitev,
+- občutljivost teme,
+- kakovost kategorij odgovorov.
 
-        prompt = f"""
-Analiziraj naslednje vprašanje po metodologiji QAS-99:
+### Tehnologija
 
-{free_question}
-
-Pripravi strukturirano poročilo.
-"""
-
-        try:
-
-            client = OpenAI(
-                api_key=st.secrets["OPENAI_API_KEY"]
-            )
-
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": SYSTEM_PROMPT
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
-            )
-
-            st.markdown(
-                response.choices[0].message.content
-            )
-
-        except Exception as e:
-            st.error(f"Napaka: {e}")
+- Streamlit
+- Groq API
+- Llama 3.3 70B
+""")
