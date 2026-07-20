@@ -207,10 +207,43 @@ OBLIKA ODGOVORA
 
 Rezultat predstavi v pregledni markdown razpredelnici s štirimi stolpci:
 
-| Ime postavke | Težava (DA/NE) | Razlaga |
-|----------|----------------|----------|
+| Postavka | Ime postavke | Težava (DA/NE) | Razlaga |
+|----------|---------------|----------------|----------|
 
-V razpredelnici mora biti ena vrstica za vsako postavko od Q1a do Q8a.
+V tabeli mora biti ena vrstica za vsako postavko od Q1a do Q8a.
+
+Uporabi naslednja imena postavk:
+
+| Postavka | Ime postavke |
+|-----------|--------------------------------------------------------------|
+| Q1a | Določanje, kateri deli vprašanja se preberejo |
+| Q1b | Manjkajoče informacije |
+| Q1c | Zahtevnost branja |
+| Q2a | Napačna ali nasprotujoča si navodila |
+| Q2b | Zapletena navodila |
+| Q3a | Dolgo ali nerodno besedilo |
+| Q3b | Nejasni strokovni izrazi |
+| Q3c | Dvoumno vprašanje |
+| Q3d | Nejasno referenčno obdobje |
+| Q4a | Neustrezne predpostavke o respondentu |
+| Q4b | Predpostavka stalnega vedenja |
+| Q4c | Dvojno vprašanje (double-barreled) |
+| Q5a | Pomanjkanje znanja |
+| Q5b | Neoblikovano mnenje |
+| Q5c | Težaven priklic iz spomina |
+| Q5d | Zahtevno miselno računanje |
+| Q6a | Občutljiva tema |
+| Q6b | Neprimerno besedilo za občutljivo temo |
+| Q6c | Družbeno zaželen odgovor |
+| Q7a | Neprimerno odprto vprašanje |
+| Q7b | Neujemanje vprašanja in odgovornih kategorij |
+| Q7c | Nejasne odgovorne kategorije |
+| Q7d | Dvoumne odgovorne kategorije |
+| Q7e | Prekrivajoče se odgovorne kategorije |
+| Q7f | Manjkajoče odgovorne kategorije |
+| Q7g | Nelogičen vrstni red odgovorov |
+| Q8a | Druge metodološke težave |
+
 
 Pravila:
 - Če je odgovor "DA", v stolpec "Razlaga" napiši kratko pojasnilo (1–2 stavka).
