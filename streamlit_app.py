@@ -1,8 +1,9 @@
+
 import streamlit as st
 from openai import OpenAI
 
 # ====================================================
-# NASTAVITVE
+# NASTAVITVE STRANI
 # ====================================================
 
 st.set_page_config(
@@ -12,6 +13,79 @@ st.set_page_config(
 )
 
 # ====================================================
+# CSS
+# ====================================================
+
+st.markdown("""
+<style>
+
+.main {
+    padding-top: 0.5rem;
+}
+
+.stButton > button {
+    background-color: #1f4e79;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+}
+
+.stButton > button:hover {
+    background-color: #2c6aa0;
+    color: white;
+}
+
+div[data-testid="stMarkdownContainer"] table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+div[data-testid="stMarkdownContainer"] table th {
+    background-color: #1f4e79;
+    color: white;
+    border: 1px solid #d9d9d9;
+    padding: 10px;
+}
+
+div[data-testid="stMarkdownContainer"] table td {
+    border: 1px solid #d9d9d9;
+    padding: 8px;
+}
+
+div[data-testid="stMarkdownContainer"] table tr:nth-child(even) {
+    background-color: #f5f7fa;
+}
+
+.intro-box {
+    background-color: #eef5fb;
+    border-left: 6px solid #1f4e79;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.comment-box {
+    background-color: #f1fff4;
+    border-left: 6px solid #198754;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.question-box {
+    background-color: #fff7ef;
+    border-left: 6px solid #fd7e14;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# ====================================================
 # GROQ
 # ====================================================
 
@@ -19,6 +93,7 @@ client = OpenAI(
     api_key=st.secrets["GROQ_API_KEY"],
     base_url="https://api.groq.com/openai/v1"
 )
+
 
 # ====================================================
 # SISTEMSKI PROMPT
@@ -262,18 +337,27 @@ Po razpredelnici dodaj še naslednja razdelka:
 Odgovarjaj v slovenščini.
 """
 
+
 # ====================================================
 # NASLOV
 # ====================================================
 
-st.title("📋 QAS-99 Ocenjevalnik vprašanj")
+st.markdown("""
+<h1 style="text-align:center;color:#1f4e79;">
+📋 QAS-99 Ocenjevalnik vprašanj
+</h1>
+""", unsafe_allow_html=True)
 
 st.markdown("""
-Orodje za avtomatsko evalvacijo vprašanj po metodologiji **QAS-99**.
-""")
+<div class="intro-box">
+<b>RTI Question Appraisal System (QAS-99)</b><br><br>
+Orodje samodejno pregleda anketna vprašanja in odgovorne kategorije,
+prepozna metodološke pomanjkljivosti ter predlaga izboljšave.
+</div>
+""", unsafe_allow_html=True)
 
 # ====================================================
-# ZAVIHKI
+# TABI
 # ====================================================
 
 tab1, tab2 = st.tabs(
@@ -317,7 +401,9 @@ KATEGORIJE ODGOVOROV
 {categories if categories.strip() else "Odprto vprašanje"}
 """
 
-        with st.spinner("Izvajam analizo ..."):
+        with st.spinner(
+            "🔍 Izvajam metodološko analizo vprašanja po QAS-99 ..."
+        ):
 
             try:
 
@@ -338,10 +424,69 @@ KATEGORIJE ODGOVOROV
 
                 result = response.choices[0].message.content
 
-                st.markdown("---")
-                st.markdown(result)
+                result = result.replace(
+                    "| DA |",
+                    "| 🔴 DA |"
+                )
+
+                result = result.replace(
+                    "| NE |",
+                    "| 🟢 NE |"
+                )
+
+                if "## Dodatni komentarji" in result:
+
+                    parts = result.split(
+                        "## Dodatni komentarji",
+                        1
+                    )
+
+                    table_section = parts[0]
+
+                    remainder = parts[1]
+
+                    if "## Predlog novega vprašanja" in remainder:
+
+                        comments, suggestion = remainder.split(
+                            "## Predlog novega vprašanja",
+                            1
+                        )
+
+                    else:
+
+                        comments = remainder
+                        suggestion = ""
+
+                    st.markdown("---")
+
+                    st.markdown(table_section)
+
+                    st.markdown(
+                        f"""
+                        <div class="comment-box">
+                        <h3>📝 Dodatni komentarji</h3>
+                        {comments}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                    st.markdown(
+                        f"""
+                        <div class="question-box">
+                        <h3>💡 Predlog novega vprašanja</h3>
+                        {suggestion}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                else:
+
+                    st.markdown(result)
 
             except Exception as e:
+
                 st.error(f"Napaka: {e}")
 
 # ====================================================
@@ -354,7 +499,7 @@ with tab2:
 ### Namen
 
 Orodje demonstrira uporabo velikih jezikovnih modelov
-za evalvacijo anketnih vprašanj po metodologiji QAS-99.
+za evalvacijo anketnih vprašanj po metodologiji QAS‑99.
 
 ### Kaj preverja?
 
@@ -370,4 +515,13 @@ za evalvacijo anketnih vprašanj po metodologiji QAS-99.
 - Streamlit
 - Groq API
 - Llama 3.3 70B
+- QAS-99 metodologija
+
+### Predvidena uporaba
+
+- razvoj vprašalnikov,
+- metodološki pregledi,
+- podpora raziskovalcem,
+- predhodna evalvacija vprašanj.
 """)
+
